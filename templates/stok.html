@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Stok{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="header">
+        <h2>📦 Manajemen Stok</h2>
+
+        <input
+            type="text"
+            id="searchInput"
+            class="search-box"
+            placeholder="Cari bahan..."
+            onkeyup="searchStok()">
+    </div>
+
+    <br>
+
+    {% for b in bahan %}
+    <div class="card stok-item">
+
+        <div>
+            <b>{{ b[1] }}</b><br>
+            Stok: {{ b[2] }}
+        </div>
+
+        <form method="post" class="actions">
+            <input type="hidden" name="bahan_id" value="{{ b[0] }}">
+            <input type="number" name="qty" required min="1">
+
+            <button name="aksi" value="tambah" class="tambah">+</button>
+            <button name="aksi" value="kurang" class="kurang">-</button>
+        </form>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+<style>
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.search-box{
+    padding:8px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    width:200px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.actions{
+    display:flex;
+    gap:10px;
+}
+
+.actions input{
+    width:70px;
+    padding:5px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+
+button{
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
+    color:white;
+    cursor:pointer;
+}
+
+.tambah{
+    background:#2ecc71;
+}
+
+.kurang{
+    background:#e67e22;
+}
+
+.tambah:hover{
+    opacity:0.9;
+}
+
+.kurang:hover{
+    opacity:0.9;
+}
+</style>
+
+<script>
+function searchStok(){
+    let keyword =
+        document.getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+    let items =
+        document.querySelectorAll(".stok-item");
+
+    items.forEach(item => {
+        let text = item.innerText.toLowerCase();
+
+        item.style.display =
+            text.includes(keyword)
+            ? "flex"
+            : "none";
+    });
+}
+</script>
+
+{% endblock %}

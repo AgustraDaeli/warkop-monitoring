@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <h2>📜 History Transaksi</h2>
+
+    <form method="post">
+        <input type="date" name="tanggal" required>
+        <button type="submit">Tampilkan</button>
+    </form>
+
+    <br>
+
+    {% if data %}
+        {% for d in data %}
+        <div class="card">
+            <b>{{ d[1] }}</b> ({{ d[2] }})<br>
+
+            Tanggal: {{ d[5] }} <br>
+
+            {% if d[4] %}
+                <b>Total: Rp {{ d[4] }}</b><br>
+            {% endif %}
+
+            {% if d[3]=='berhasil' %}
+                <span class="berhasil">Berhasil</span>
+
+            {% elif d[3]=='cancel' %}
+                <span class="cancel">Cancel</span>
+
+            {% elif d[3]=='tambah_stok' %}
+                <span style="color:blue;">+ Stok</span>
+
+            {% elif d[3]=='kurang_stok' %}
+                <span style="color:orange;">- Stok</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Tidak ada data</p>
+    {% endif %}
+
+</div>
+
+<style>
+.card{
+    background:white;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
+}
+
+.berhasil{
+    color:green;
+    font-weight:bold;
+}
+
+.cancel{
+    color:red;
+    font-weight:bold;
+}
+
+input[type=date]{
+    padding:8px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+button{
+    padding:8px 12px;
+    border-radius:8px;
+    border:none;
+    background:#3498db;
+    color:white;
+    cursor:pointer;
+}
+</style>
+
+{% endblock %}

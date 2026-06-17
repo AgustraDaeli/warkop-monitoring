@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Grafik Penjualan{% endblock %}
+
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ================= HEADER ================= */
+
+.header{
+    background:linear-gradient(135deg,#2c3e50,#4ca1af);
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+
+/* ================= CONTENT ================= */
+
+.container{
+    padding:25px;
+}
+
+.info-card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:25px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.chart-card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    height:500px;
+}
+
+.btn-home{
+    display:inline-block;
+    margin-bottom:20px;
+    text-decoration:none;
+    background:#3498db;
+    color:white;
+    padding:10px 15px;
+    border-radius:8px;
+}
+
+</style>
+
+<div class="header">
+    <h2>Grafik Produk Terlaris</h2>
+</div>
+
+<div class="container">
+
+    <a href="/" class="btn-home">← Back</a>
+
+    <form method="POST"
+          style="
+          background:white;
+          padding:15px;
+          border-radius:12px;
+          margin-bottom:20px;
+          ">
+
+        <label>
+            Pilih Tanggal :
+        </label>
+
+        <input
+            type="date"
+            name="tanggal"
+            value="{{ tanggal }}"
+        >
+
+        <button type="submit">
+            Tampilkan
+        </button>
+
+    </form>
+
+    <div class="info-card">
+
+        <h2>🏆 Produk Terlaris</h2>
+
+        <h3>{{ produk_terlaris }}</h3>
+
+        <p>Total Terjual : {{ total_terjual }}</p>
+
+    </div>
+
+    <div class="chart-card">
+
+        <canvas id="grafikPenjualan"></canvas>
+
+    </div>
+
+</div>
+
+<script>
+
+const labels = {{ label_grafik | tojson }};
+const data = {{ jumlah_grafik | tojson }};
+
+const ctx = document.getElementById('grafikPenjualan');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Jumlah Terjual',
+            data: data
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+</script>
+
+{% endblock %}

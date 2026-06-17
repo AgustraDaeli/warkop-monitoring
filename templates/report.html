@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Report{% endblock %}
+
+{% block content %}
+
+<h2>📑 Laporan Penjualan</h2>
+
+<form method="POST">
+    <input type="date" name="tanggal" value="{{ tanggal }}">
+    <button type="submit">Filter</button>
+</form>
+
+<br>
+
+<div style="margin-bottom:20px;">
+    <a href="/export/excel">
+        <button class="btn btn-success">
+            📊 Export Excel
+        </button>
+    </a>
+
+    <a href="/export/pdf">
+        <button class="btn btn-danger">
+            📄 Export PDF
+        </button>
+    </a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Menu</th>
+            <th>Qty</th>
+            <th>Total Harga</th>
+            <th>Waktu</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in history %}
+        <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+            <td>Rp {{ "{:,.0f}".format(item[2]) }}</td>
+            <td>{{ item[3] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-3">
+    <h4>
+        💰 Total Pendapatan:
+        Rp {{ "{:,.0f}".format(total) }}
+    </h4>
+</div>
+
+{% endblock %}

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login - Warkop Ageto</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,0.55),
+        rgba(0,0,0,0.55)
+    ),
+    url("{{ url_for('static', filename='logo.jpeg') }}");
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+.login-box{
+    position: relative;
+
+    width: 380px;
+    background: rgba(255,255,255,0.95);
+    padding: 40px;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+.logo{
+
+    text-align:center;
+    margin-bottom:25px;
+
+}
+
+.logo h1{
+
+    color:#2c3e50;
+    font-size:36px;
+    margin-bottom:5px;
+
+}
+
+.logo p{
+
+    color:#777;
+    font-size:14px;
+
+}
+
+/* INPUT */
+
+.form-group{
+
+    margin-bottom:20px;
+
+}
+
+.form-group label{
+
+    display:block;
+    margin-bottom:8px;
+
+    color:#333;
+    font-weight:500;
+
+}
+
+.form-group input{
+
+    width:100%;
+
+    padding:14px;
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    outline:none;
+
+    transition:0.3s;
+
+    font-size:14px;
+
+}
+
+.form-group input:focus{
+
+    border-color:#3498db;
+
+    box-shadow:0 0 8px rgba(52,152,219,0.3);
+
+}
+
+/* BUTTON */
+
+.btn-login{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#3498db;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:0.3s;
+
+}
+
+.btn-login:hover{
+
+    background:#2980b9;
+
+    transform:translateY(-2px);
+
+}
+
+/* FOOTER */
+
+.footer{
+
+    margin-top:25px;
+
+    text-align:center;
+
+    color:#888;
+
+    font-size:13px;
+
+}
+
+.error{
+
+    background:#ffebee;
+
+    color:#c62828;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    margin-bottom:15px;
+
+    text-align:center;
+
+}
+
+@media(max-width:500px){
+
+    .login-box{
+
+        width:90%;
+        padding:30px;
+
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <div class="logo">
+
+        <h1>Warkop Ageto ☕</h1>
+
+        <p>Sistem Manajemen Stok & Penjualan</p>
+
+    </div>
+
+    {% if error %}
+    <div class="error">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+
+        <div class="form-group">
+
+            <label>Username</label>
+
+            <input
+                type="text"
+                name="username"
+                placeholder="Masukkan username"
+                required>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Password</label>
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Masukkan password"
+                required>
+
+        </div>
+
+        <button type="submit" class="btn-login">
+            Login
+        </button>
+
+    </form>
+</div>
+
+
+</body>
+</html>

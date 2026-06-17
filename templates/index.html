@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Warkop Stock</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    background: #f4f6f9;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    background: #2c3e50;
+    transition: 0.3s;
+    overflow: hidden;
+}
+
+.sidebar.active {
+    width: 130px;
+}
+
+/* ITEM MENU */
+.menu-item {
+    display: flex;
+    align-items: center;
+    color: white;
+    padding: 15px;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background: #34495e;
+}
+
+/* ICON */
+.icon {
+    width: 30px;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* TEXT */
+.text {
+    margin-left: 10px;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.sidebar.active .text {
+    opacity: 1;
+}
+
+/* ================= MAIN ================= */
+.main {
+    margin-left: 60px;
+    transition: 0.3s;
+}
+
+.main.shift {
+    margin-left: 130px;
+}
+
+/* ================= HEADER ================= */
+.header {
+    background: linear-gradient(135deg, #2c3e50, #4ca1af);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+/* ================= KATEGORI ================= */
+.kategori {
+    display: flex;
+    justify-content: center; /* 🔥 bikin center */
+    align-items: center;
+
+    gap: 20px;
+    padding: 30px;
+
+    overflow-x: auto;
+}
+
+.kategori button {
+    flex: 0 0 250px; /* 🔥 ukuran fix biar sejajar */
+    height: 150px;
+
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+
+    font-size: 20px;
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #4ca1af, #2c3e50);
+    color: white;
+
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.kategori button:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+}
+
+/* saat aktif (klik) */
+.kategori button:active {
+    transform: scale(0.97);
+}
+
+/* ================= GRID ================= */
+.container {
+    padding: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+/* ================= BUTTON ================= */
+.beli {
+    width: 100%;
+    margin-top: 8px;
+    padding: 7px;
+    border: none;
+    border-radius: 10px;
+    background: #2ecc71;
+    color: white;
+    cursor: pointer;
+}
+
+/* ================= RIWAYAT ================= */
+.riwayat {
+    margin: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+.riwayat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.cancel {
+    color: red;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.popup button {
+    margin: 5px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.popup button:first-child {
+    background: red;
+    color: white;
+}
+
+.popup button:last-child {
+    background: gray;
+    color: white;
+}
+
+/* CARD */
+.card-menu {
+    position: relative;
+    background: white;
+    padding: 15px;
+    padding-top: 55px;   /* ruang untuk badge stok */
+    border-radius: 12px;
+    border: 3px solid #ddd;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    min-height: 180px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    min-height: 140px;
+
+    transition: 0.2s;
+}
+
+/* BADGE STOK */
+.stock-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ecf0f1;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-align: right;
+    border: 1px solid #ddd;
+}
+
+.nama-produk{
+    margin-top: 0;
+    margin-right: 80px;   /* beri ruang untuk badge stok */
+    word-wrap: break-word;
+    line-height: 1.3;
+}
+
+/* tiap baris stok */
+.stock-item {
+    display: block;
+}
+
+/* tombol tetap di bawah */
+.card-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-action {
+    margin-top: 15px;
+}
+
+/* 🔥 kalau habis */
+.badge-habis {
+    background: #bdc3c7;
+    color: #7f8c8d;
+}
+
+/* card habis */
+.card-menu.habis {
+    opacity: 0.6;
+}
+
+/* tombol disable */
+button:disabled {
+    background: gray;
+    cursor: not-allowed;
+}
+
+.nama-produk {
+    max-width: 70%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+}
+
+.fly-item{
+    position: fixed;
+    z-index: 99999;
+
+    background: #2ecc71;
+    color: white;
+
+    padding: 8px 15px;
+    border-radius: 20px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    pointer-events: none;
+
+    transition:
+        left 0.8s ease,
+        top 0.8s ease,
+        transform 0.8s ease,
+        opacity 0.8s ease;
+}
+
+</style>
+
+<script>
+function toggleSidebar(){
+    let sidebar = document.getElementById("sidebar");
+    let main = document.getElementById("main");
+
+    sidebar.classList.toggle("active");
+    main.classList.toggle("shift");
+}
+
+function bukaMenu(k){
+    // sembunyikan dashboard awal
+    document.getElementById("dashboardAwal").style.display = "none";
+
+    // tampilkan area produk
+    document.getElementById("produkArea").style.display = "block";
+
+    // sembunyikan semua menu
+    document.querySelectorAll('.menu').forEach(x=>x.style.display='none');
+
+    // tampilkan kategori dipilih
+    document.getElementById(k).style.display='block';
+}
+
+function kembaliDashboard(){
+    document.getElementById("dashboardAwal").style.display = "block";
+    document.getElementById("produkArea").style.display = "none";
+}
+
+window.onload = function(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const menu = urlParams.get('menu');
+
+    if(menu){
+        bukaMenu(menu);
+    }
+}
+
+let manualOpen = false;
+
+function hoverOpen(){
+    if(!manualOpen){
+        document.getElementById("sidebar").classList.add("active");
+        document.getElementById("main").classList.add("shift");
+    }
+}
+
+function hoverClose(){
+    if(!manualOpen){
+        document.getElementById("sidebar").classList.remove("active");
+        document.getElementById("main").classList.remove("shift");
+    }
+}
+
+function showLogoutPopup(){
+    document.getElementById("logoutPopup").style.display = "flex";
+}
+
+function closePopup(){
+    document.getElementById("logoutPopup").style.display = "none";
+}
+
+function logout(){
+    window.location.href = "/logout";
+}
+
+let produkDipilih = "";
+let selectedId = "";
+let selectedKategori = "";
+let selectedQty = 1;
+let cancelId = null;
+
+let hargaData = {
+    "Susu Putih": {Hot:6000, Ice:7000}, "Susu Coklat": {Hot:6000, Ice:7000}, "Teh Tarik": {Hot:7000, Ice:8000}, "Beng Beng": {Hot:7000, Ice:8000},
+    "Milo": {Hot:8000, Ice:10000}, "Ovaltine": {Hot:8000, Ice:10000}, "Energen": {Hot:9000, Ice:10000}, "Chocolatos Coklat": {Hot:70000, Ice:8000},
+    "Chocolatos Matcha": {Hot:7000, Ice:8000}, "Kapal Api": {Hot:5000, Ice:7000}, "Kopi Tubruk": {Hot:5000, Ice:7000}, "Kopi Liong": {Hot:7000, Ice:14000},
+    "ABC Susu": {Hot:8000, Ice:5000}, "Luwak White Coffee": {Hot:5000, Ice:7000}, "Indocafe Milk": {Hot:5000, Ice:7000}, "Good Day": {Hot:7000, Ice:8000}
+};
+
+function animasiKeRiwayat(btn, callback){
+
+    const target = document.getElementById("targetRiwayat");
+
+    const start = btn.getBoundingClientRect();
+    const end = target.getBoundingClientRect();
+
+    let fly = document.createElement("div");
+
+    fly.className = "fly-item";
+    fly.innerText = btn.dataset.nama;
+
+    fly.style.left = start.left + "px";
+    fly.style.top = start.top + "px";
+
+    document.body.appendChild(fly);
+
+    requestAnimationFrame(() => {
+
+        fly.style.left = (end.left + 50) + "px";
+        fly.style.top = (end.top + 50) + "px";
+
+        fly.style.transform = "scale(0.2)";
+        fly.style.opacity = "0";
+
+    });
+
+    setTimeout(() => {
+
+        fly.remove();
+
+        if(callback){
+            callback();
+        }
+
+    }, 800);
+}
+
+function handleBeli(btn){
+
+    let nama = btn.dataset.nama;
+    let id = btn.dataset.id;
+    let kategori = btn.dataset.kategori;
+
+    let card = btn.closest(".card-menu");
+    let qtyInput = card.querySelector("input[name='qty']");
+    let qty = qtyInput ? qtyInput.value : 1;
+
+    selectedId = id;
+    selectedKategori = kategori;
+    selectedQty = qty;
+    produkDipilih = nama;
+
+    // simpan tombol yang diklik
+    window.btnDipilih = btn;
+
+    if(hargaData[nama]){
+
+        document.getElementById("popupNama").innerText = nama;
+        document.getElementById("popup").style.display = "flex";
+
+        document.getElementById("varian").value = "Hot";
+        updateHarga();
+
+    }else{
+
+        submitLangsung();
+
+    }
+
+}
+
+// update harga popup
+function updateHarga(){
+    let varian = document.getElementById("varian").value;
+    let harga = hargaData[produkDipilih][varian];
+
+    document.getElementById("harga").innerText = "Rp " + harga;
+}
+
+function submitPesanan(){
+
+    let varian = document.getElementById("varian").value;
+    let harga = hargaData[produkDipilih][varian];
+
+    tutupPopup();
+
+    kirimPesanan({
+        id:selectedId,
+        kategori:selectedKategori,
+        qty:selectedQty,
+        varian:varian,
+        harga:harga,
+        nama:produkDipilih
+    });
+
+}
+
+function submitLangsung(){
+
+    kirimPesanan({
+        id:selectedId,
+        kategori:selectedKategori,
+        qty:selectedQty,
+        nama:produkDipilih
+    });
+
+}
+
+function tutupPopup(){
+    document.getElementById("popup").style.display = "none";
+}
+
+function cancelTransaksi(el){
+
+    cancelId = el.getAttribute("data-id");
+
+    document.getElementById("cancelPassword").value = "";
+
+    document.getElementById("cancelPopup").style.display = "flex";
+
+}
+
+function tutupCancelPopup(){
+
+    document.getElementById("cancelPopup").style.display = "none";
+
+}
+
+function prosesCancel(){
+
+    let password =
+        document.getElementById("cancelPassword").value;
+
+    fetch("/cancel",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded"
+        },
+        body:`id=${cancelId}&password=${password}`
+    })
+    .then(res=>{
+
+        if(res.status === 403){
+
+            alert("Password salah!");
+            return null;
+
+        }
+
+        return res.json();
+
+    })
+    .then(data=>{
+
+        if(!data) return;
+
+        tutupCancelPopup();
+
+        // update stok lagi
+        refreshStokRealtime();
+
+        // hapus item dari riwayat tampilan
+        location.reload();
+
+    });
+
+}
+
+function kirimPesanan(data){
+
+    fetch("/beli",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded"
+        },
+        body:new URLSearchParams(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+
+        // ERROR STOK
+        if(result.status === "ERROR"){
+            alert(result.message);
+            return;
+        }
+
+        if(result.status === "OK"){
+
+            animasiKeRiwayat(window.btnDipilih, () => {
+
+                tambahRiwayat(result);
+
+                updateCardHabis(result.stok);
+
+                refreshStokRealtime();
+
+            });
+
+        }
+
+    });
+
+}
+
+
+function tambahRiwayat(data){
+
+    let riwayat = document.getElementById("riwayatList");
+
+    let item = document.createElement("div");
+
+    item.className = "riwayat-item";
+
+    item.innerHTML = `
+        <div>
+            ${data.nama} (${data.qty}) <br>
+            <small>Rp ${data.harga}</small>
+        </div>
+
+        <div>
+            <a class="cancel"
+               href="javascript:void(0)"
+               data-id="${data.id}"
+               onclick="cancelTransaksi(this)">
+               Cancel
+            </a>
+        </div>
+    `;
+
+    riwayat.prepend(item);
+
+}
+
+function refreshStokRealtime(){
+
+    fetch("/get_stok")
+    .then(res => res.json())
+    .then(data => {
+
+        document
+        .querySelectorAll(".stock-item")
+        .forEach(el => {
+
+            let bahan = el.dataset.bahan;
+
+            if(!bahan) return;
+
+            if(data[bahan] !== undefined){
+
+                let stokBaru = data[bahan];
+
+                // UPDATE TEXT STOK
+                if(el.classList.contains("stok-utama")){
+
+                    el.innerText = "Stok: " + stokBaru;
+
+                    // CARD PRODUK
+                    let card = el.closest(".card-menu");
+
+                    // TOMBOL BELI
+                    let tombol = card.querySelector(".beli");
+
+                    if(stokBaru <= 0){
+
+                        card.classList.add("habis");
+
+                        tombol.disabled = true;
+                        tombol.innerText = "Habis";
+
+                    }else{
+
+                        card.classList.remove("habis");
+
+                        tombol.disabled = false;
+                        tombol.innerText = "Beli";
+
+                    }
+
+                }else{
+
+                    el.innerText =
+                        bahan + ": " + stokBaru;
+
+                }
+
+            }
+
+        });
+
+    });
+
+}
+
+function updateCardHabis(stokData){
+
+    Object.keys(stokData).forEach(namaBahan => {
+
+        let stokBaru = stokData[namaBahan];
+
+        document
+        .querySelectorAll(`.stock-item[data-bahan="${namaBahan}"]`)
+        .forEach(el => {
+
+            if(el.classList.contains("stok-utama")){
+
+                el.innerText =
+                    "Stok: " + stokBaru;
+
+                let card = el.closest(".card-menu");
+
+                let tombol =
+                    card.querySelector(".beli");
+
+                if(stokBaru <= 0){
+
+                    card.classList.add("habis");
+
+                    tombol.disabled = true;
+
+                    tombol.innerText = "Habis";
+
+                }
+
+            }else{
+
+                el.innerText =
+                    namaBahan + ": " + stokBaru;
+
+            }
+
+        });
+
+    });
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+
+    <!-- TOGGLE (TIDAK ADA HOVER) -->
+    <div class="menu-item" onclick="toggleSidebar()">
+        <div class="icon">☰</div>
+        <div class="text">Menu</div>
+    </div>
+
+    <!-- HOME -->
+    <div class="menu-item" 
+         onmouseenter="hoverOpen()" 
+         onmouseleave="hoverClose()"
+         onclick="window.location.href='/'">
+        <div class="icon">🏠</div>
+        <div class="text">Home</div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="menu-item" 
+         onmouseenter="hoverOpen()" 
+         onmouseleave="hoverClose()"
+         onclick="window.location.href='/history'">
+        <div class="icon">📜</div>
+        <div class="text">History</div>
+    </div>
+
+    <div class="menu-item" 
+        onmouseenter="hoverOpen()" 
+        onmouseleave="hoverClose()"
+        onclick="window.location.href='/stok'">
+        <div class="icon">📦</div>
+        <div class="text">Stok</div>
+    </div>
+
+    <div class="menu-item" 
+     onmouseenter="hoverOpen()" 
+     onmouseleave="hoverClose()"
+     onclick="window.location.href='/grafik'">
+    <div class="icon">📊</div>
+    <div class="text">Grafik</div>
+    </div>
+
+    <div class="menu-item" 
+     onmouseenter="hoverOpen()" 
+     onmouseleave="hoverClose()"
+     onclick="window.location.href='/report'">
+    <div class="icon">📑</div>
+    <div class="text">Report</div>
+    </div>
+
+    <!-- LOGOUT -->
+    <div class="menu-item" 
+         onmouseenter="hoverOpen()" 
+         onmouseleave="hoverClose()"
+         onclick="showLogoutPopup()">
+        <div class="icon">🔓</div>
+        <div class="text">Logout</div>
+    </div>
+
+</div>
+
+<!-- POPUP LOGOUT -->
+<div id="logoutPopup" class="popup">
+    <div class="popup-box">
+        <h3>Yakin ingin logout?</h3>
+        <button onclick="logout()">Ya</button>
+        <button onclick="closePopup()">Batal</button>
+    </div>
+</div>
+
+<!-- POPUP HOT/ICE -->
+<div id="popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index: 9999;">
+
+    <div style="background:white; padding:20px; border-radius:10px; width:250px; text-align:center;">
+        
+        <h3 id="popupNama">Produk</h3>
+
+        <select id="varian" onchange="updateHarga()" style="
+        padding:5px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        ">
+        <option value="Hot">Hot</option>
+        <option value="Ice">Ice</option>
+        </select>
+        <p>Harga: <span id="harga">0</span></p>
+
+        <button onclick="submitPesanan()">OK</button>
+        <button onclick="tutupPopup()">Batal</button>
+    </div>
+
+</div>
+
+<div id="cancelPopup" class="popup">
+    <div class="popup-box">
+
+        <h3>Masukkan Password</h3>
+
+        <input
+            type="password"
+            id="cancelPassword"
+            placeholder="Password"
+            style="
+                padding:8px;
+                width:90%;
+                margin-bottom:10px;
+            "
+        >
+
+        <br>
+
+        <button onclick="prosesCancel()">OK</button>
+        <button onclick="tutupCancelPopup()">Batal</button>
+
+    </div>
+</div>
+
+<!-- MAIN -->
+<div id="main" class="main">
+
+<div class="header">
+Ageto Warkop Stock
+</div>
+
+<div id="dashboardAwal">
+
+    <div style="
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin-top:15px;
+    flex-wrap:wrap;
+">
+
+   <div style="display: flex; justify-content: center; gap: 20px;">
+
+    <div class="card">
+        <h4>Total Hari Ini</h4>
+        <h2>Rp {{ "{:,}".format(total_hari_ini) }}</h2>
+    </div>
+
+    <div class="card">
+        <h4>Jumlah Transaksi</h4>
+        <h2>{{ jumlah_transaksi }}</h2>
+    </div>
+
+    <div class="card">
+        <h4>🔥 Produk Terlaris</h4>
+        {% if produk_terlaris %}
+            <p>{{ produk_terlaris[0] }} ({{ produk_terlaris[1] }}x)</p>
+        {% else %}
+            <p>-</p>
+        {% endif %}
+    </div>
+
+</div>
+
+</div>
+
+    <div class="kategori">
+        <button onclick="bukaMenu('INDOMIE')">🍜 Indomie</button>
+        <button onclick="bukaMenu('SNACK')">🍟 Snack</button>
+        <button onclick="bukaMenu('MILK')">🥛 Milk</button>
+        <button onclick="bukaMenu('COFFEE')">☕ Coffee</button>
+        <button onclick="bukaMenu('NUTRISARI')">🍊 Nutrisari</button>
+    </div>
+
+</div>
+
+<div class="container" id="produkArea" style="display:none;">
+
+    <button onclick="kembaliDashboard()" style="
+        margin: 20px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        border:none;
+        background:#2c3e50;
+        color:white;
+        cursor:pointer;
+        ">
+        ← Back
+        </button>
+
+{% set kategori = ["INDOMIE","SNACK","MILK","COFFEE","NUTRISARI"] %}
+
+{% for k in kategori %}
+<div id="{{k}}" class="menu" style="display:none;">
+<div class="grid">
+
+{% for p in produk %}
+{% if p[2]==k %}
+
+{% set bahan = resep_map[p[0]] %}
+{% set stok_utama = bahan[0][1] if bahan|length > 0 else 0 %}
+
+<div class="card-menu {% if stok_utama == 0 %}habis{% endif %}"
+     data-id="{{p[0]}}">
+
+    <!-- BADGE -->
+    <div class="stock-badge {% if stok_utama == 0 %}badge-habis{% endif %}">
+        {% if bahan|length >= 1 %}
+            <span class="stock-item stok-utama"
+            data-bahan="{{ bahan[0][0] }}"
+            data-produk="{{p[0]}}">
+            Stok: {{ bahan[0][1] }}
+        </span>
+        {% endif %}
+
+        {% if bahan|length > 1 %}
+            {% for b in bahan[1:] %}
+                <span class="stock-item"
+            data-bahan="{{ b[0] }}">
+            {{ b[0] }}: {{ b[1] }}
+        </span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <h3 class="nama-produk">{{p[1]}}</h3>
+    <!-- HARGA -->
+    <div style="margin-top:5px; font-size:14px; color:#555;">
+        
+        {% if p[1] in ['Susu Putih', 'Susu Coklat', 'Teh Tarik', 'Beng-Beng', 'Milo', 'Ovaltine', 'Energen', 'Chocolatos Matcha', 
+        'Chocolatos Coklat', 'Kapal Api', 'Kopi Tubruk', 'Kopi Liong', 'ABC Susu', 'Luwak White Coffee', 'Indocafe Milk', 'Good Day'] %}
+            Hot : {{harga_map[p[1]]['Hot']}} <br>
+            Ice : {{harga_map[p[1]]['Ice']}}
+        {% else %}
+            Rp {{harga_satuan[p[1]]}}
+        {% endif %}
+
+    </div>
+
+    <div class="card-action">
+        <form action="/beli" method="post">
+            <input type="hidden" name="id" value="{{p[0]}}">
+            <input type="hidden" name="kategori" value="{{p[2]}}">
+            <input type="number" name="qty" value="1" min="1">
+
+            <!-- 🔥 DISABLE JIKA HABIS -->
+           <button type="button" class="beli"
+            {% if stok_utama == 0 %}disabled{% endif %}
+            data-nama="{{ p[1] }}"
+            data-id="{{ p[0] }}"
+            data-kategori="{{ p[2] }}"
+            onclick="handleBeli(this)">
+
+            {% if stok_utama == 0 %}Habis{% else %}Beli{% endif %}
+        </button>
+        </form>
+    </div>
+
+</div>
+
+{% endif %}
+{% endfor %}
+
+</div>
+</div>
+{% endfor %}
+
+</div>
+
+<!-- RIWAYAT -->
+<div class="riwayat" id="targetRiwayat">
+
+    <h3>Riwayat Hari Ini</h3>
+
+    <div id="riwayatList">
+
+        {% for o in orders %}
+        <div class="riwayat-item">
+
+            <div>
+                {{o[1]}} ({{o[2]}}) <br>
+                <small>Rp {{o[3]}}</small>
+            </div>
+
+            <div>
+                <a class="cancel"
+                   href="javascript:void(0)"
+                   data-id="{{o[0]}}"
+                   onclick="cancelTransaksi(this)">
+                   Cancel
+                </a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+</body>
+</html>
