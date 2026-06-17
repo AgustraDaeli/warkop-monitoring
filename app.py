@@ -8,6 +8,7 @@ import os
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
+
 app = Flask(__name__)
 app.secret_key = 'secret123'
 
