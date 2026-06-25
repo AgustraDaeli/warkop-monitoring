@@ -6,7 +6,6 @@
 
 <h2>📑 Laporan Penjualan</h2>
 
-
 <form method="POST">
     <input type="date" name="tanggal" value="{{ tanggal }}">
     <button type="submit">Filter</button>
@@ -15,13 +14,13 @@
 <br>
 
 <div style="margin-bottom:20px;">
-    <a href="/export/excel">
-        <button class="btn btn-success">
-            📊 Export Excel
+    <a href="/export/excel?tanggal={{ tanggal }}">
+    <button class="btn btn-success">
+        📊 Export Excel
         </button>
     </a>
 
-    <a href="/export/pdf">
+    <a href="/export/pdf?tanggal={{ tanggal }}">
         <button class="btn btn-danger">
             📄 Export PDF
         </button>
