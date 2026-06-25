@@ -17,7 +17,6 @@
             onkeyup="searchStok()">
     </div>
 
-    
     <br>
 
     {% for b in bahan %}
@@ -28,20 +27,47 @@
             Stok: {{ b[2] }}
         </div>
 
-        <form method="post" class="actions">
-            <input type="hidden" name="bahan_id" value="{{ b[0] }}">
-            <input type="number" name="qty" required min="1">
+        <div class="actions">
 
-            <button name="aksi" value="tambah" class="tambah">+</button>
-            <button name="aksi" value="kurang" class="kurang">-</button>
-        </form>
+            <input type="number" id="qty-{{ b[0] }}" min="1" value="1">
+
+            <button type="button"
+                class="tambah"
+                onclick="openStokPopup({{ b[0] }}, 'tambah')">
+                +
+            </button>
+
+            <button type="button"
+                class="kurang"
+                onclick="openStokPopup({{ b[0] }}, 'kurang')">
+                -
+            </button>
+
+        </div>
 
     </div>
     {% endfor %}
 
 </div>
 
+<!-- 🔐 POPUP PASSWORD -->
+<div id="stokPopup" class="popup">
+    <div class="popup-box">
+
+        <h3>Masukkan Password</h3>
+
+        <input type="password" id="stokPassword" placeholder="Password">
+
+        <br><br>
+
+        <button class="btn-ok" onclick="prosesStok()">OK</button>
+        <button class="btn-cancel" onclick="tutupStokPopup()">Batal</button>
+
+    </div>
+</div>
+
 <style>
+
 .header{
     display:flex;
     justify-content:space-between;
@@ -71,10 +97,11 @@
 .actions{
     display:flex;
     gap:10px;
+    align-items:center;
 }
 
 .actions input{
-    width:70px;
+    width:60px;
     padding:5px;
     border-radius:6px;
     border:1px solid #ccc;
@@ -88,6 +115,7 @@ button{
     cursor:pointer;
 }
 
+/* tombol stok */
 .tambah{
     background:#2ecc71;
 }
@@ -96,26 +124,119 @@ button{
     background:#e67e22;
 }
 
-.tambah:hover{
-    opacity:0.9;
+.tambah:hover,
+.kurang:hover{
+    opacity:0.85;
 }
 
-.kurang:hover{
-    opacity:0.9;
+/* popup */
+.popup {
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
 }
+
+.popup-box{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+    min-width:250px;
+}
+
+/* 🔥 FIX BUTTON POPUP BIAR JELAS */
+.btn-ok{
+    background:#2ecc71;
+    color:white;
+    margin:5px;
+    padding:8px 15px;
+    border-radius:8px;
+    font-weight:600;
+}
+
+.btn-cancel{
+    background:#e74c3c;
+    color:white;
+    margin:5px;
+    padding:8px 15px;
+    border-radius:8px;
+    font-weight:600;
+}
+
+.btn-ok:hover,
+.btn-cancel:hover{
+    opacity:0.85;
+}
+
 </style>
 
 <script>
+
+let stokBahanId = null;
+let stokAksi = null;
+
+function openStokPopup(id, aksi){
+    stokBahanId = id;
+    stokAksi = aksi;
+
+    document.getElementById("stokPassword").value = "";
+    document.getElementById("stokPopup").style.display = "flex";
+}
+
+function tutupStokPopup(){
+    document.getElementById("stokPopup").style.display = "none";
+}
+
+function prosesStok(){
+
+    let password = document.getElementById("stokPassword").value;
+
+    let qtyInput = document.getElementById("qty-" + stokBahanId);
+    let qty = qtyInput ? qtyInput.value : 1;
+
+    fetch("/stok", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `bahan_id=${stokBahanId}&qty=${qty}&aksi=${stokAksi}&password=${password}`
+    })
+    .then(res => {
+
+        if(res.status === 403){
+            alert("Password salah!");
+            return null;
+        }
+
+        return res.text();
+    })
+    .then(data => {
+
+        if(!data) return;
+
+        tutupStokPopup();
+
+        // refresh tampilan stok
+        location.reload();
+
+    });
+
+}
+
 function searchStok(){
     let keyword =
         document.getElementById("searchInput")
         .value
         .toLowerCase();
 
-    let items =
-        document.querySelectorAll(".stok-item");
-
-    items.forEach(item => {
+    document.querySelectorAll(".stok-item").forEach(item => {
         let text = item.innerText.toLowerCase();
 
         item.style.display =
@@ -124,6 +245,7 @@ function searchStok(){
             : "none";
     });
 }
+
 </script>
 
 {% endblock %}
