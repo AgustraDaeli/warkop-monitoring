@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Warkop Stock</title>
-    
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -731,6 +730,26 @@ function updateCardHabis(stokData){
 
 }
 
+function updateDashboard() {
+
+    fetch("/dashboard-data")
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("total_hari_ini").innerText = data.total_hari_ini;
+        document.getElementById("jumlah_transaksi").innerText = data.jumlah_transaksi;
+        document.getElementById("produk_terlaris").innerText = data.produk_terlaris;
+
+    });
+
+}
+
+// jalan pertama kali
+updateDashboard();
+
+// lalu jalan setiap 2 detik
+setInterval(updateDashboard, 2000);
+
 </script>
 
 </head>
@@ -875,23 +894,29 @@ Ageto Warkop Stock
    <div style="display: flex; justify-content: center; gap: 20px;">
 
     <div class="card">
-        <h4>Total Hari Ini</h4>
-        <h2>Rp {{ "{:,}".format(total_hari_ini) }}</h2>
-    </div>
+    <h4>Total Hari Ini</h4>
+    <h2 id="total_hari_ini">
+        Rp {{ "{:,}".format(total_hari_ini) }}
+    </h2>
+</div>
 
-    <div class="card">
-        <h4>Jumlah Transaksi</h4>
-        <h2>{{ jumlah_transaksi }}</h2>
-    </div>
+<div class="card">
+    <h4>Jumlah Transaksi</h4>
+    <h2 id="jumlah_transaksi">
+        {{ jumlah_transaksi }}
+    </h2>
+</div>
 
-    <div class="card">
-        <h4>🔥 Produk Terlaris</h4>
+<div class="card">
+    <h4>🔥 Produk Terlaris</h4>
+    <p id="produk_terlaris">
         {% if produk_terlaris %}
-            <p>{{ produk_terlaris[0] }} ({{ produk_terlaris[1] }}x)</p>
+            {{ produk_terlaris[0] }} ({{ produk_terlaris[1] }}x)
         {% else %}
-            <p>-</p>
+            -
         {% endif %}
-    </div>
+    </p>
+</div>
 
 </div>
 
@@ -1030,6 +1055,7 @@ Ageto Warkop Stock
     </div>
 
 </div>
+
 
 
 </body>
