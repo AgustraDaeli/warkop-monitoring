@@ -8,7 +8,6 @@ import os
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
-
 app = Flask(__name__)
 app.secret_key = 'secret123'
 
@@ -232,7 +231,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        if username == 'admin' and password == '123':
+        if username == 'admin' and password == 'ageto99':
 
             session['login'] = True
             return redirect('/')
@@ -744,20 +743,22 @@ def report():
         """, (tanggal,))
 
     else:
+        today = datetime.now().strftime("%Y-%m-%d")
 
         c.execute("""
             SELECT nama, qty, total_harga, waktu
             FROM transaksi
+            WHERE DATE(waktu)=%s
             ORDER BY id DESC
-        """)
+        """, (today,))
 
         history = c.fetchall()
 
         c.execute("""
             SELECT SUM(total_harga)
             FROM transaksi
-        """)
-
+            WHERE DATE(waktu)=%s
+        """, (today,))
     total = c.fetchone()[0] or 0
 
     conn.close()
@@ -772,36 +773,54 @@ def report():
 @app.route('/export/pdf')
 def export_pdf():
 
+    tanggal = request.args.get("tanggal")
+
     conn = db()
     c = conn.cursor()
 
-    c.execute("""
-        SELECT nama, qty, total_harga, waktu
-        FROM transaksi
-        ORDER BY id DESC
-    """)
+    if tanggal:
+        c.execute("""
+            SELECT nama, qty, total_harga, waktu
+            FROM transaksi
+            WHERE DATE(waktu)=%s
+            ORDER BY id DESC
+        """, (tanggal,))
+    else:
+        c.execute("""
+            SELECT nama, qty, total_harga, waktu
+            FROM transaksi
+            ORDER BY id DESC
+        """)
 
     data = c.fetchall()
+    total_qty = 0
+    total_harga = 0
 
+    for row in data:
+        total_qty += row[1]
+        total_harga += row[2]
     conn.close()
 
     file_path = "report.pdf"
 
     pdf = SimpleDocTemplate(file_path)
 
-    table_data = [
-        ["Nama", "Qty", "Total Harga", "Waktu"]
-    ]
+    table_data = [["Nama", "Qty", "Total Harga", "Waktu"]]
 
     for row in data:
         table_data.append(list(row))
+    table_data.append(["TOTAL", total_qty, total_harga, "-"])
 
     table = Table(table_data)
-
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+
+    # 🔥 TOTAL ROW STYLE (BARIS PALING BAWAH)
+    ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+    ('ALIGN', (0, -1), (-1, -1), 'CENTER'),
+    ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
     ]))
 
     pdf.build([table])
@@ -811,37 +830,83 @@ def export_pdf():
 @app.route('/export/excel')
 def export_excel():
 
+    tanggal = request.args.get("tanggal")
+
     conn = db()
     c = conn.cursor()
 
-    c.execute("""
-        SELECT nama, qty, total_harga, waktu
-        FROM transaksi
-        ORDER BY id DESC
-    """)
+    if tanggal:
+        c.execute("""
+            SELECT nama, qty, total_harga, waktu
+            FROM transaksi
+            WHERE DATE(waktu)=%s
+            ORDER BY id DESC
+        """, (tanggal,))
+    else:
+        c.execute("""
+            SELECT nama, qty, total_harga, waktu
+            FROM transaksi
+            ORDER BY id DESC
+        """)
 
     data = c.fetchall()
 
+    total_qty = 0
+    total_harga = 0
+
+    for row in data:
+        total_qty += row[1]
+        total_harga += row[2]
     conn.close()
 
     df = pd.DataFrame(
         data,
-        columns=[
-            'Nama Produk',
-            'Qty',
-            'Total Harga',
-            'Waktu'
-        ]
+        columns=['Nama Produk','Qty','Total Harga','Waktu']
     )
+
+    df.loc[len(df)] = ["TOTAL", total_qty, total_harga, ""]
 
     file_path = "report.xlsx"
-
     df.to_excel(file_path, index=False)
 
-    return send_file(
-        file_path,
-        as_attachment=True
-    )
+    return send_file(file_path, as_attachment=True)
+
+@app.route('/dashboard-data')
+def dashboard_data():
+
+    conn = db()
+    c = conn.cursor()
+
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # TOTAL HARI INI + JUMLAH TRANSAKSI
+    c.execute("""
+        SELECT SUM(total_harga), COUNT(*)
+        FROM transaksi
+        WHERE waktu LIKE %s
+    """, (today + "%",))
+
+    total_hari_ini, jumlah_transaksi = c.fetchone()
+
+    # PRODUK TERLARIS
+    c.execute("""
+        SELECT nama, SUM(qty)
+        FROM transaksi
+        WHERE waktu LIKE %s
+        GROUP BY nama
+        ORDER BY SUM(qty) DESC
+        LIMIT 1
+    """, (today + "%",))
+
+    produk = c.fetchone()
+
+    conn.close()
+
+    return jsonify({
+        "total_hari_ini": total_hari_ini or 0,
+        "jumlah_transaksi": jumlah_transaksi or 0,
+        "produk_terlaris": produk[0] if produk else "-"
+    })
 
 # ================= RUN =================
 if __name__ == '__main__':
